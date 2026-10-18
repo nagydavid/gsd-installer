@@ -1,0 +1,25 @@
+{
+  "name": "balanced",
+  "description": "Mid-tier models per role; Auto routing on balance.",
+  "selection": "median",
+  "default": { "category": "versatile", "autoTier": "balance" },
+  "roles": {
+    "gsd-planner":               { "category": "powerful",  "effortLevel": "medium" },
+    "gsd-phase-researcher":      { "category": "powerful",  "effortLevel": "medium" },
+    "gsd-project-researcher":    { "category": "powerful",  "effortLevel": "medium" },
+    "gsd-research-synthesizer":  { "category": "versatile", "effortLevel": "medium" },
+    "gsd-roadmapper":            { "category": "powerful",  "effortLevel": "medium" },
+    "gsd-executor":              { "category": "versatile", "effortLevel": "medium" },
+    "gsd-code-fixer":            { "category": "versatile", "effortLevel": "medium" },
+    "gsd-plan-checker":          { "category": "powerful",  "effortLevel": "low" },
+    "gsd-verifier":              { "category": "powerful",  "effortLevel": "low" },
+    "gsd-code-reviewer":         { "category": "versatile", "effortLevel": "medium" },
+    "gsd-security-auditor":      { "category": "powerful",  "effortLevel": "low" },
+    "gsd-doc-classifier":        { "category": "lightweight", "effortLevel": "low" },
+    "gsd-doc-synthesizer":       { "category": "lightweight", "effortLevel": "low" },
+    "gsd-doc-writer":            { "category": "versatile", "effortLevel": "low" },
+    "gsd-codebase-mapper":       { "category": "versatile", "effortLevel": "low" },
+    "gsd-pattern-mapper":        { "category": "versatile", "effortLevel": "low" },
+    "gsd-intel-updater":         { "category": "lightweight", "effortLevel": "low" }
+  }
+}

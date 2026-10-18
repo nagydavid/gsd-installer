@@ -1,0 +1,25 @@
+{
+  "name": "quality",
+  "description": "Strongest models for planning/verification; Auto routing on intelligence.",
+  "selection": "flagship",
+  "default": { "category": "powerful", "autoTier": "intelligence" },
+  "roles": {
+    "gsd-planner":               { "category": "powerful",  "effortLevel": "high" },
+    "gsd-phase-researcher":      { "category": "powerful",  "effortLevel": "high" },
+    "gsd-project-researcher":    { "category": "powerful",  "effortLevel": "high" },
+    "gsd-research-synthesizer":  { "category": "powerful",  "effortLevel": "medium" },
+    "gsd-roadmapper":            { "category": "powerful",  "effortLevel": "high" },
+    "gsd-executor":              { "category": "powerful",  "effortLevel": "medium", "selection": "median" },
+    "gsd-code-fixer":            { "category": "powerful",  "effortLevel": "medium", "selection": "median" },
+    "gsd-plan-checker":          { "category": "powerful",  "effortLevel": "high" },
+    "gsd-verifier":              { "category": "powerful",  "effortLevel": "high" },
+    "gsd-code-reviewer":         { "category": "powerful",  "effortLevel": "medium", "selection": "median" },
+    "gsd-security-auditor":      { "category": "powerful",  "effortLevel": "high" },
+    "gsd-doc-classifier":        { "category": "versatile", "effortLevel": "low" },
+    "gsd-doc-synthesizer":       { "category": "versatile", "effortLevel": "low" },
+    "gsd-doc-writer":            { "category": "versatile", "effortLevel": "medium" },
+    "gsd-codebase-mapper":       { "category": "versatile", "effortLevel": "medium" },
+    "gsd-pattern-mapper":        { "category": "versatile", "effortLevel": "medium" },
+    "gsd-intel-updater":         { "category": "versatile", "effortLevel": "low" }
+  }
+}
