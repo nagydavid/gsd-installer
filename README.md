@@ -57,7 +57,7 @@ double compression + cache thrash. That is why native compaction stays off.
 | Component | How it was tested | Reduction |
 |---|---|---|
 | Billion Context | 14 planning benchmarks (Phases 5–6) | **−57–77%** context exposure |
-| RTK | production execution workload, 1,301 shell commands | **−34.1%** shell output (153.2K tokens saved); 0.05% in planning |
+| RTK | production execution workload (Phase 7) + live `rtk gain` | **−34.1%** shell output benchmark; live machine **−40.9%** (2,146 commands, 265K tokens saved); 0.05% in planning |
 | LeanCTX (on-demand) | 2.02 MB / 162-file repo benchmark, 5 keyed questions (Phase 8) | **−40.3%** exposure · −78.7% tool bytes · −54% tool calls |
 | LeanCTX rules block | fixed-overhead measurement (Phase 7) | **−2,837 tok/session** removed via `inject_rules=false` |
 | GSD MCP + plugins | fixed-overhead ladder (Phase 8) | **−459 tok/request** (they compress roster injection) |

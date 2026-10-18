@@ -5,6 +5,18 @@
 
 shared_state_file() { echo "${GSD_INSTALLER_STATE_DIR:-$HOME/.local/share/gsd-installer}/shared-state.json"; }
 
+resolve_lean_ctx() { # prints absolute path to a lean-ctx binary, or nothing; PATH first, then npm prefix / standard bin dirs
+  local c; c="$(command -v lean-ctx 2>/dev/null || true)"
+  [[ -n "$c" ]] && { echo "$c"; return 0; }
+  command -v npm >/dev/null 2>&1 || return 0
+  local pfx d
+  pfx="$(npm config get prefix 2>/dev/null || true)"
+  for d in "$pfx/bin" "$HOME/.npm-global/bin" /opt/homebrew/bin /usr/local/bin; do
+    [[ -n "$d" && -x "$d/lean-ctx" ]] && { echo "$d/lean-ctx"; return 0; }
+  done
+  return 0
+}
+
 tool_present() { # <name>  — name is the npm package or binary probe
   case "$1" in
     billion-context) command -v bili >/dev/null 2>&1 || npm ls -g billion-context >/dev/null 2>&1 ;;

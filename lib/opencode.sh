@@ -31,12 +31,30 @@ opencode_configure() {
     const s=JSON.parse(process.argv[1]);
     s.setIfAbsent.push({path:"mcp.gsd",value:{command:["npx","-y","-p","@opengsd/gsd-core","gsd-mcp-server","--no-prompts"],enabled:true,type:"local"}});
     console.log(JSON.stringify(s));' "$spec_obj")"
-  # lean-ctx MCP entry — only when the shared tool is actually installed; PATH-resolved command
-  if tool_present lean-ctx; then
-    spec_obj="$(node -e '
-      const s=JSON.parse(process.argv[1]);
-      s.setIfAbsent.push({path:"mcp.lean-ctx",value:{command:["lean-ctx","mcp"],enabled:true,type:"local"}});
-      console.log(JSON.stringify(s));' "$spec_obj")"
+  # lean-ctx MCP entry — spawn-safe resolution: PATH first, then npm prefix /
+  # standard bin dirs (covers npm-global/nvm prefixes not on the GUI-launch PATH).
+  # Bare "lean-ctx" is registered only from standard bin dirs; otherwise the
+  # absolute resolved path is used so OpenCode can spawn it regardless of its
+  # own PATH. A stale/unusable existing entry is repaired, or disabled when
+  # the binary is absent on this machine.
+  local lc_cmd="" lc_name
+  lc_cmd="$(resolve_lean_ctx)"
+  local lc_action="disable" lc_value="null"
+  if [[ -n "$lc_cmd" ]]; then
+    lc_name="lean-ctx"
+    case "$lc_cmd" in
+      /usr/local/bin/lean-ctx|/opt/homebrew/bin/lean-ctx|/usr/bin/lean-ctx) ;;
+      *) lc_name="$lc_cmd" ;;
+    esac
+    lc_action="repair"
+    lc_value="$(node -e 'console.log(JSON.stringify({command:[process.argv[1],"mcp"],enabled:true,type:"local"}))' "$lc_name")"
+  fi
+  spec_obj="$(node -e '
+    const s=JSON.parse(process.argv[1]);
+    s.repairMcp=[{path:"mcp.lean-ctx",action:process.argv[2],value:JSON.parse(process.argv[3])}];
+    console.log(JSON.stringify(s));' "$spec_obj" "$lc_action" "$lc_value")"
+  if [[ "$lc_action" == "disable" ]]; then
+    log "  lean-ctx binary not found on this machine — any stale mcp.lean-ctx entry will be disabled (install lean-ctx-bin and rerun to enable)."
   fi
   # billion-context only when installed
   if ! tool_present billion-context; then
@@ -44,7 +62,15 @@ opencode_configure() {
   fi
 
   local res
-  res="$(jsonc_merge "$jsonc" "$spec_obj")"
+  if $DRY_RUN; then
+    # show planned actions against a throwaway copy — dry-run must not write
+    local tmpc; tmpc="$(mktemp)"
+    cp "$jsonc" "$tmpc"
+    res="$(jsonc_merge "$tmpc" "$spec_obj")"
+    rm -f "$tmpc"
+  else
+    res="$(jsonc_merge "$jsonc" "$spec_obj")"
+  fi
   echo "$res" | node -e '
     const r=JSON.parse(require("fs").readFileSync(0,"utf8"));
     for(const a of r.actions) console.log("  [jsonc] "+a);

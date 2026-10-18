@@ -63,6 +63,7 @@ INSTALL_TS="$(date -u +%Y%m%dT%H%M%SZ)"
 backup_file() { # <configdir> <file>  — copy-if-exists, record in manifest
   local cfg="$1" file="$2"
   [[ -f "$file" ]] || return 0
+  $DRY_RUN && return 0
   local root rel dest
   root="$(installer_backup_root "$cfg")"
   rel="${file#"$cfg"/}"
@@ -75,6 +76,7 @@ backup_file() { # <configdir> <file>  — copy-if-exists, record in manifest
 
 manifest_record() { # <configdir> <ts> <kind> <file> <stored>
   local cfg="$1" ts="$2" kind="$3" file="$4" stored="${5:-}"
+  $DRY_RUN && return 0
   local mf; mf="$(manifest_path "$cfg")"
   mkdir -p "$(dirname "$mf")"
   [[ -f "$mf" ]] || echo '{"runs":{}}' > "$mf"

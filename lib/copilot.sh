@@ -20,13 +20,20 @@ copilot_configure() {
   local mcp="$cfg/mcp-config.json"
   [[ -f "$mcp" ]] || { $DRY_RUN || echo '{"mcpServers":{}}' > "$mcp"; }
   backup_file "$cfg" "$mcp"
-  if tool_present lean-ctx; then
-    local lean_cmd
-    lean_cmd="$(command -v lean-ctx 2>/dev/null || true)"
-    [[ -z "$lean_cmd" ]] && lean_cmd="$(npm root -g 2>/dev/null || echo /usr/local/lib/node_modules)/lean-ctx-bin/bin/lean-ctx"
-    jsonc_merge "$mcp" "$(node -e '
-      const cmd=process.argv[1];
-      console.log(JSON.stringify({setIfAbsent:[{path:"mcpServers.lean-ctx",value:{type:"local",command:cmd,args:["mcp"],tools:["*"]}}]}))' "$lean_cmd")" >/dev/null
+  local lean_cmd; lean_cmd="$(resolve_lean_ctx)"
+  if [[ -n "$lean_cmd" ]]; then
+    if $DRY_RUN; then
+      local tmpc; tmpc="$(mktemp)"
+      if [[ -f "$mcp" ]]; then cp "$mcp" "$tmpc"; else echo '{}' > "$tmpc"; fi
+      jsonc_merge "$tmpc" "$(node -e '
+        const cmd=process.argv[1];
+        console.log(JSON.stringify({setIfAbsent:[{path:"mcpServers.lean-ctx",value:{type:"local",command:cmd,args:["mcp"],tools:["*"]}}]}))' "$lean_cmd")" >/dev/null
+      rm -f "$tmpc"
+    else
+      jsonc_merge "$mcp" "$(node -e '
+        const cmd=process.argv[1];
+        console.log(JSON.stringify({setIfAbsent:[{path:"mcpServers.lean-ctx",value:{type:"local",command:cmd,args:["mcp"],tools:["*"]}}]}))' "$lean_cmd")" >/dev/null
+    fi
     log "  mcp-config.json: lean-ctx registered ($lean_cmd; existing servers preserved)"
   fi
 
