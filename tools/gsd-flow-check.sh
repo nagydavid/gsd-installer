@@ -77,12 +77,13 @@ const rows = execFileSync("sqlite3", ["-json", "file:" + db + "?mode=ro",
 if (!rows) { console.log("(no gsd sessions found)"); process.exit(0); }
 let mismatches = 0, unmanaged = 0;
 for (const r of JSON.parse(rows)) {
-  if (!r.model || r.model === "null/null" || r.model === "null") { console.log(`INFO     ${r.agent} -> no model request recorded`); continue; }
-  const base = r.agent.replace(/\.compact$/, "");
+  const agent = r.agent || "(no agent recorded)";
+  if (!r.model || r.model === "null/null" || r.model === "null") { console.log(`INFO     ${agent} -> no model request recorded`); continue; }
+  const base = agent.replace(/\.compact$/, "");
   const expected = map[base];
-  if (!expected) { unmanaged++; console.log(`INFO     ${r.agent} -> ${r.model} (no jsonc entry; inherits default)`); continue; }
-  if (expected === r.model) console.log(`MATCH    ${r.agent} -> ${r.model}`);
-  else { mismatches++; console.log(`MISMATCH ${r.agent} -> ${r.model} (expected ${expected})`); }
+  if (!expected) { unmanaged++; console.log(`INFO     ${agent} -> ${r.model} (no jsonc entry; inherits default)`); continue; }
+  if (expected === r.model) console.log(`MATCH    ${agent} -> ${r.model}`);
+  else { mismatches++; console.log(`MISMATCH ${agent} -> ${r.model} (expected ${expected})`); }
 }
 console.log(`routing: ${mismatches} mismatch(es), ${unmanaged} agent(s) not in map`);
 EOF
