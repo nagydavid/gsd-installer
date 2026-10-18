@@ -20,34 +20,46 @@ a prerequisite for the other.
 
 ## Why each component
 
-| Component | Layer | Measured result | Verdict |
-|---|---|---|---|
-| GSD Core | workflow | 35 agents / 72 commands / 72 skills | the product; staged upstream-only, never patched |
-| Billion Context | conversation history | 99.9% prompt-cache hit | single compressor; native compaction stays off |
-| RTK | shell tool boundary | −34.1% output in execution (153.2K tok saved, 1,301 cmds) | keep global; no overlap with bili |
-| LeanCTX | code retrieval, on demand | −40.3% exposure, −78.7% tool bytes, −54% tool calls @ +288 tok fixed | register MCP; use via task instruction |
-| Routing in `opencode.jsonc` | config | survives all GSD updates | user-owned; upstream touches only `mcp` |
+| Component | Layer | Verdict |
+|---|---|---|
+| GSD Core | workflow | the product; staged upstream-only, never patched |
+| Billion Context | conversation history | single compressor; native compaction stays off |
+| RTK | shell tool boundary | keep global; no overlap with bili |
+| LeanCTX | code retrieval, on demand | register MCP; use via task instruction |
+| Routing in `opencode.jsonc` | config | user-owned; survives all GSD updates |
 
 Why not one tool? Each works at a different layer — history (bili), shell
 output (RTK), file retrieval (LeanCTX). Two compressors at one layer =
 double compression + cache thrash. That is why native compaction stays off.
 
-## Evidence (Phases 5–8, local models, MEASURED)
+## Measured context reduction per component
 
-| Phase | Finding | Number |
+| Component | How it was tested | Reduction |
 |---|---|---|
-| 5–6 | 14 planning benchmarks; RTK planning vs execution | 0.05% vs **34.1%** |
-| 5–6 | version-confounded arm → update policy | pin only on reproducible regression |
-| 7 | LeanCTX auto-injected rules block, no spontaneous use | 2,837 tok/session → `inject_rules=false` |
-| 7 | bili version pin removed, auto-update restored | 0.1.197 → latest |
-| 8 | bili upgrade validated live | 0.1.199, 99.9% cache hit, no regression |
-| 8 | RTK five-point check | all PASS |
-| 8 | LeanCTX benchmark, 2.02 MB / 162 files, 5 keyed questions | −40.3% exposure, 5/5 accuracy both arms |
-| 8 | overhead ladder | bare 5,302 → +GSD 12,493 → gsd plugins **−459** → +lean-ctx +288 |
-| 8 | maintainability audit | 10/10 SUPPORTED; absolute-path fragility fixed here |
+| Billion Context | 14 planning benchmarks (Phases 5–6) | **−57–77%** context exposure |
+| RTK | production execution workload, 1,301 shell commands | **−34.1%** shell output (153.2K tokens saved); 0.05% in planning |
+| LeanCTX (on-demand) | 2.02 MB / 162-file repo benchmark, 5 keyed questions (Phase 8) | **−40.3%** exposure · −78.7% tool bytes · −54% tool calls |
+| LeanCTX rules block | fixed-overhead measurement (Phase 7) | **−2,837 tok/session** removed via `inject_rules=false` |
+| GSD MCP + plugins | fixed-overhead ladder (Phase 8) | **−459 tok/request** (they compress roster injection) |
 
-Conclusion: four components, each with a distinct measured role — the stack
-is final. This installer encodes exactly that configuration.
+Scale caveat: LeanCTX is net-negative at 144 KB (native grep is already
+selective there); its benefit appears at ≥2 MB repositories. Fixed cost of
+keeping its MCP registered: +288 tok/request.
+
+Fixed-overhead ladder (first-request input tokens, bench lane):
+
+| Layer | Tokens |
+|---|---|
+| bare OpenCode | 5,302 |
+| + GSD catalog (64 agents / 72 commands / 73 skills) | 12,493 |
+| + gsd MCP + gsd/rtk plugins | 12,034 (net −459) |
+| + lean-ctx MCP | 12,322 (+288) |
+
+Update policy from the same program: pin a version only on a reproducible
+functional regression (bili 0.1.197 pin was removed once 0.1.199 validated
+non-degrading: 99.9% cache hit, no regression). Maintainability audit:
+10/10 mechanisms SUPPORTED; the one fragile item (absolute binary path) is
+fixed in this installer.
 
 ## What each setting does
 
