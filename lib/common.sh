@@ -22,11 +22,24 @@ prompt_choice() { # <question> <opt1> <opt2> ... ; sets CHOICE (1-based)
   echo "$q"
   local i=1
   for opt in "$@"; do echo "  $i. $opt"; i=$((i+1)); done
-  local input
-  echo -n "> " >&2
-  if input=$(read -r </dev/tty 2>/dev/null); then :; else read -r input; fi
-  [[ "$input" =~ ^[0-9]+$ ]] && (( input >= 1 && input < i )) || { echo "Invalid choice."; prompt_choice "$q" "$@"; return 0; }
-  CHOICE="$input"
+  local input ok
+  while :; do
+    echo -n "> " >&2
+    input=""; ok=0
+    # plain read — NOT command substitution: $(read </dev/tty) returns empty
+    # in the substitution subshell, which broke curl|bash interactive prompts
+    if read -r input </dev/tty 2>/dev/null; then ok=1
+    elif [[ -t 0 ]] && read -r input; then ok=1; fi
+    input="${input%$'\r'}"
+    if [[ "$input" =~ ^[0-9]+$ ]] && (( input >= 1 && input < i )); then
+      CHOICE="$input"; return 0
+    fi
+    if [[ $ok -eq 0 ]]; then
+      echo "No interactive terminal detected — rerun with: --harness opencode|copilot|both  (or --yes for defaults)." >&2
+      exit 1
+    fi
+    echo "Invalid choice."
+  done
 }
 
 # ---------------------------------------------------------------- config roots
