@@ -7,7 +7,21 @@ a prerequisite for the other.
 
 ## Quick start
 
+One line on macOS or Linux (needs `bash`, `curl`, `node`; `git` optional —
+falls back to the GitHub tarball; `python3` optional for live model pricing):
+
 ```bash
+curl -fsSL https://raw.githubusercontent.com/nagydavid/gsd-installer/main/bootstrap.sh | bash
+# explicit mode / preview:
+curl -fsSL https://raw.githubusercontent.com/nagydavid/gsd-installer/main/bootstrap.sh | bash -s -- --harness both --dry-run
+# pin a ref:
+GSD_INSTALLER_VERSION=main curl -fsSL https://raw.githubusercontent.com/nagydavid/gsd-installer/main/bootstrap.sh | bash
+```
+
+Or clone and run:
+
+```bash
+git clone https://github.com/nagydavid/gsd-installer && cd gsd-installer
 ./install.sh                      # interactive (detects harnesses)
 ./install.sh --harness opencode   # or: copilot | both
 ./install.sh --dry-run            # preview, changes nothing
@@ -16,6 +30,13 @@ a prerequisite for the other.
 --profile economy|balanced|quality|custom   # Copilot model profiles
 --recommend-models                # recommendations only, no writes
 --yes                             # noninteractive defaults
+```
+
+Rollback after a curl install (manifests live in your config dirs, so no
+local copy is needed):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nagydavid/gsd-installer/main/bootstrap.sh | bash -s -- --rollback --harness opencode
 ```
 
 ## Why each component
@@ -119,6 +140,7 @@ rollback scope · neither-installed UX · dry-run · recommend-only.
 ## Layout
 
 ```
+bootstrap.sh            curl one-liner entry (fetch + run install.sh)
 install.sh              entry + args + harness choice
 lib/common.sh           logging, prompts, backups, manifests
 lib/detect.sh           symmetric harness detection
